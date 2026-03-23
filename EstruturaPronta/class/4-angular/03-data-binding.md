@@ -1,0 +1,148 @@
+# Angular Data Binding
+
+### What is Data Binding?
+
+Data Binding is one of the core features of Angular. It allows you to connect model data (**component class**) with the template (**user interface**), enabling changes made to the data to be automatically reflected in the user interface and vice versa.
+
+There are four main types of data binding in Angular: _Interpolation_; _Property Binding_; _Event Binding_; _Two-Way Binding_.
+
+### Interpolation `{{ }}`
+Interpolation is a simple form of data binding that allows you to display model values in the template, within text elements or attributes.
+
+Example:
+```html
+<h1>{{ title }}</h1>
+<p>{{ description }}</p>
+```
+
+### Property Binding `[ ]`
+
+Property Binding allows you to assign model property values to HTML element attributes.
+
+Example:
+
+```html
+<button [disabled]="isButtonDisabled">Click here</button>
+```
+
+### Event Binding `( )`
+
+Event Binding allows you to bind events (such as clicks, mouseover, etc.) to component model methods.
+
+Example:
+```html
+<button (click)="handleClick()">Click me</button>
+```
+
+### Two-Way Binding `[( )]`
+
+Two-Way Binding combines *Property Binding* and *Event Binding*. It maintains bidirectional synchronization between the model and the template. Any model or template changes will automatically reflect in the other.
+
+Example:
+```html
+<input [(ngModel)]="name">
+<p>Hello, {{ name }}!</p>
+```
+
+**How to enable Two-Way Binding?**
+
+To use *Two-Way Binding*, import the **FormsModule** in your main module (usually *app.module.ts*). Make sure the import is correctly included in the imports array of the NgModule:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms'; // Import FormsModule
+
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule, FormsModule], // Add FormsModule here
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+```
+
+**Data Binding Notes**
+
+- Data Binding is a powerful way to connect model data and the template, making the application more dynamic and responsive to changes in the data.
+- It is important to be cautious to avoid infinite update loops when using Two-Way Binding, as changes in the model can trigger continuous updates in the template and vice versa.
+- When using Two-Way Binding with the ngModel directive, remember to import FormsModule as explained earlier.
+
+### Resume
+
+Angular Data Binding is one of the main reasons the framework is so efficient for developing reactive and interactive web applications. 
+
+With Data Binding, you can create dynamic and responsive user interfaces, making it easier for users to interact with your application.
+
+## Angular Class and Style Binding
+
+In addition to the four main types of data binding mentioned earlier, Angular provides additional features to bind CSS classes and styles directly to the template.
+
+These features are known as **Class Binding** and **Style Binding**.
+
+### Class Binding
+
+**Class Binding** allows you to dynamically add or remove CSS classes to HTML elements based on model property values. This is useful when you want to change the style of an element based on certain conditions or states of the application.
+
+Example:
+
+```html
+<button [class.button-new]="isNew">Click here</button>
+```
+
+In this example, the CSS class **"button-new"** will be added to the button only when the **isNew** property in the component is true.
+
+### Style Binding
+
+Style Binding lets you set CSS styles directly in the template based on model property values. This lets you dynamically change style properties like color, size, margins, etc.
+
+Example:
+
+```html
+<p [style.color]="textColor">This text has a dynamic color</p>
+```
+
+In this example, the paragraph's **color** CSS style will be set based on the value of the **corTexto** property in the component.
+
+**Applying Conditions with Class and Style Binding**
+
+In addition to adding classes and styles, you can apply complex conditions using **ternary expressions** or the **&&** (AND) operator to combine multiple conditions.
+
+Example using ternary expression:
+
+```html
+<button [class.button-new]="isNew ? true : false">Click here</button>
+```
+
+Example using the && (AND) operator:
+
+```html
+<button [class.button-enabled]="isNew && !isFilled">Click here</button>
+```
+
+**Class and Style Binding in Two-Way Binding**
+
+Combining Class Binding or Style Binding with Two-Way Binding creates highly dynamic and interactive user interfaces.
+
+Example with Two-Way Binding and Class Binding:
+
+```html
+<input [(ngModel)]="classCSS" [class]="classCSS">
+```
+
+In this example, the value of the `classCSS` property in the model is bound to the class attribute of the input element, allowing the user to change the applied CSS class dynamically.
+
+*Summary*
+
+Class Binding and Style Binding are powerful Angular features for dynamically applying styles and classes in the template based on model properties. These functionalities make developing interactive and reactive user interfaces easier and more efficient, allowing you to create more dynamic applications with a better user experience.
+
+
+## 👷 Task
+
+Create pull requests for your project according to [Task Submission Guidelines.](../assessment.md#task-submission)
+
+- Create an angular project in Github.
+- Include a devcontainer to work with typescript. You can use [Account Frontend Example](https://github.com/persapiens-classes/account-frontend).
+- Create an insert, list, and remove crud operations of a model in the template. Your model should have 3 attributes: string, number, and boolean.
