@@ -1,0 +1,13 @@
+{
+  "name": "ria-example",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.0",
+    "@vitest/ui": "^4.1.0",
+    "vitest": "^4.1.0"
+  },
+  "scripts": {
+    "test": "vitest"
+  }
+}
