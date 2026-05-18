@@ -229,7 +229,7 @@
           size="large"
           [raised]="true"
           [severity]="editando ? 'warn' : 'primary'"
-          [disabled]="formInvalido()"
+          [disabled]="produtoForm().invalid()"
           (onClick)="salvar()">
 
         </p-button>

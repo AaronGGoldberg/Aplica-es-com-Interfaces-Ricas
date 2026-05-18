@@ -44,8 +44,6 @@ export class App {
     max(produto.preco, 999999.99, { message: 'O preço ultrapassa o limite permitido.' });
   });
 
-  readonly formInvalido = computed(() => !this.produtoForm().valid());
-
   editando = false;
   produtoEditandoId: number | null = null;
 
@@ -54,7 +52,7 @@ export class App {
   constructor(private messageService: MessageService) {}
 
   salvar() {
-    if (this.formInvalido()) {
+    if (this.produtoForm().invalid()) {
       return;
     }
 
