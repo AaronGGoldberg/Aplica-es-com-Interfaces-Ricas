@@ -1,13 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService } from 'primeng/api';
+import { form, FormField, FormRoot, max, min, minLength, required } from '@angular/forms/signals';
 
 import { Produto } from './models/produto';
 
@@ -16,27 +15,36 @@ import { Produto } from './models/produto';
   standalone: true,
   imports: [
     ButtonModule,
-    FormsModule,
     CommonModule,
     TableModule,
     ToastModule,
     InputTextModule,
-    InputNumberModule,
-    CheckboxModule
+    CheckboxModule,
+    FormRoot,
+    FormField
   ],
   providers: [MessageService],
   templateUrl: './app.html'
 })
 export class App {
+  produtos = signal<Produto[]>([]);
 
-  produtos: Produto[] = [];
-
-  novoProduto: Produto = {
+  readonly model = signal<Produto>({
     id: 0,
     nome: '',
     preco: 0,
     ativo: true
-  };
+  });
+
+  readonly produtoForm = form(this.model, produto => {
+    required(produto.nome, { message: 'O nome do produto é obrigatório.' });
+    minLength(produto.nome, 3, { message: 'O nome deve ter no mínimo 3 caracteres.' });
+    required(produto.preco, { message: 'O preço é obrigatório.' });
+    min(produto.preco, 0.01, { message: 'O preço deve ser maior que zero.' });
+    max(produto.preco, 999999.99, { message: 'O preço ultrapassa o limite permitido.' });
+  });
+
+  readonly formInvalido = computed(() => !this.produtoForm().valid());
 
   editando = false;
   produtoEditandoId: number | null = null;
@@ -46,9 +54,15 @@ export class App {
   constructor(private messageService: MessageService) {}
 
   salvar() {
+    if (this.formInvalido()) {
+      return;
+    }
+
+    const produtoAtual = this.model();
+
     if (this.editando) {
-      this.produtos = this.produtos.map(p =>
-        p.id === this.produtoEditandoId ? { ...this.novoProduto } : p
+      this.produtos.update(produtos =>
+        produtos.map(p => (p.id === this.produtoEditandoId ? { ...produtoAtual } : p))
       );
 
       this.messageService.add({
@@ -59,10 +73,8 @@ export class App {
 
       this.editando = false;
       this.produtoEditandoId = null;
-
     } else {
-      this.novoProduto.id = Date.now();
-      this.produtos.push({ ...this.novoProduto });
+      this.produtos.update(produtos => [...produtos, { ...produtoAtual, id: Date.now() }]);
 
       this.messageService.add({
         severity: 'success',
@@ -75,7 +87,7 @@ export class App {
   }
 
   editar(produto: Produto) {
-    this.novoProduto = { ...produto };
+    this.model.set({ ...produto });
     this.editando = true;
     this.produtoEditandoId = produto.id;
 
@@ -83,7 +95,7 @@ export class App {
   }
 
   remover(produto: Produto) {
-    this.produtos = this.produtos.filter(p => p.id !== produto.id);
+    this.produtos.update(produtos => produtos.filter(p => p.id !== produto.id));
 
     if (this.produtoSelecionado?.id === produto.id) {
       this.produtoSelecionado = null;
@@ -105,6 +117,6 @@ export class App {
   }
 
   resetarFormulario() {
-    this.novoProduto = { id: 0, nome: '', preco: 0, ativo: true };
+    this.model.set({ id: 0, nome: '', preco: 0, ativo: true });
   }
 }
