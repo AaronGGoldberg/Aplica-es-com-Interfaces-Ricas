@@ -79,3 +79,21 @@ npm start
 ## 👨‍💻 Autor
 
 Projeto acadêmico organizado por **Aaron Goldberg**.
+---
+
+## 7) Atividade: Formulários com Signals
+
+Nesta evolução, a operação de **Inclusão / Alteração** foi refeita com **Signal Forms** (`@angular/forms/signals`):
+
+- o formulário agora usa `formRoot` e `formField` para bind declarativo com o model em signal;
+- validações aplicadas:
+  - `required` e `minLength(3)` para **nome**;
+  - `min(0.01)` e `max(999999.99)` para **preço**;
+- mensagens de erro aparecem quando o campo foi tocado e está inválido;
+- o botão de **Salvar / Atualizar** fica desabilitado enquanto o formulário estiver inválido.
+
+### Objetivos atendidos
+
+- Reescrita da inclusão/alteração com Signal Forms;
+- Feedback de preenchimento incorreto;
+- Controle de envio apenas com formulário válido.
