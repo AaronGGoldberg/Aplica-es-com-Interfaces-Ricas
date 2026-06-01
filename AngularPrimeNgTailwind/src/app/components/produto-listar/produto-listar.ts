@@ -1,26 +1,31 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 
+import { Produto } from '../../models/produto';
 import { ProdutoRemoverComponent } from '../produto-remover/produto-remover';
 import { ProdutoService } from '../../services/produto';
 
 @Component({
   selector: 'app-produto-listar',
   standalone: true,
-  imports: [ButtonModule, CommonModule, TableModule, ProdutoRemoverComponent],
+  imports: [ButtonModule, CommonModule, RouterLink, TableModule, ProdutoRemoverComponent],
   templateUrl: './produto-listar.html'
 })
 export class ProdutoListarComponent {
   readonly produtoService = inject(ProdutoService);
 
-  editar(id: number) {
-    this.produtoService.selecionarParaEdicao(id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  private readonly router = inject(Router);
+
+  editar(produto: Produto) {
+    this.produtoService.produtoEditando.set(produto ? { ...produto } : null);
+    this.router.navigate(['/produtos', produto.id, 'editar'], { state: { produto } });
   }
 
-  detalhar(id: number) {
-    this.produtoService.detalhar(id);
+  detalhar(produto: Produto) {
+    this.produtoService.definirProdutoDetalhado(produto);
+    this.router.navigate(['/produtos', produto.id, 'detalhar'], { state: { produto } });
   }
 }
