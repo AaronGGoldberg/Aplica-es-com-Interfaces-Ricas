@@ -1,9 +1,9 @@
-@if (produtoService.produtoDetalhado(); as produto) {
+@if (produtoEncontrado() && produtoService.produtoDetalhado(); as produto) {
   <div class="glass-card p-8">
     <div class="flex items-start justify-between gap-4 mb-8">
       <div>
         <h3 class="text-xl font-bold text-slate-800">Detalhes do Produto</h3>
-        <p class="text-slate-500 mt-1">Informações completas do item selecionado</p>
+        <p class="text-slate-500 mt-1">Informações completas do item selecionado pela rota</p>
       </div>
 
       <p-button
@@ -11,7 +11,7 @@
         severity="secondary"
         rounded
         text
-        (onClick)="produtoService.fecharDetalhes()">
+        (onClick)="fechar()">
       </p-button>
     </div>
 
@@ -30,6 +30,19 @@
         <span>Status</span>
         <strong>{{ produto.ativo ? 'Ativo' : 'Inativo' }}</strong>
       </div>
+    </div>
+  </div>
+} @else {
+  <div class="glass-card p-10 text-center">
+    <h2 class="text-2xl font-bold text-slate-800">Produto não encontrado</h2>
+    <p class="text-slate-500 mt-2">Volte para a listagem e selecione um produto cadastrado para detalhar.</p>
+
+    <div class="mt-8">
+      <p-button
+        label="Voltar para a listagem"
+        icon="pi pi-arrow-left"
+        routerLink="/produtos">
+      </p-button>
     </div>
   </div>
 }
