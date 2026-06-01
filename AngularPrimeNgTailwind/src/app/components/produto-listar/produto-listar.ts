@@ -11,7 +11,13 @@ import { ProdutoService } from '../../services/produto';
 @Component({
   selector: 'app-produto-listar',
   standalone: true,
-  imports: [ButtonModule, CommonModule, RouterLink, TableModule, ProdutoRemoverComponent],
+  imports: [
+    ButtonModule,
+    CommonModule,
+    RouterLink,
+    TableModule,
+    ProdutoRemoverComponent
+  ],
   templateUrl: './produto-listar.html'
 })
 export class ProdutoListarComponent {
@@ -20,12 +26,18 @@ export class ProdutoListarComponent {
   private readonly router = inject(Router);
 
   editar(produto: Produto) {
-    this.produtoService.produtoEditando.set(produto ? { ...produto } : null);
-    this.router.navigate(['/produtos', produto.id, 'editar'], { state: { produto } });
+    this.router.navigate([
+      '/produtos',
+      produto.id,
+      'editar'
+    ]);
   }
 
   detalhar(produto: Produto) {
-    this.produtoService.definirProdutoDetalhado(produto);
-    this.router.navigate(['/produtos', produto.id, 'detalhar'], { state: { produto } });
+    this.router.navigate([
+      '/produtos',
+      produto.id,
+      'detalhar'
+    ]);
   }
 }

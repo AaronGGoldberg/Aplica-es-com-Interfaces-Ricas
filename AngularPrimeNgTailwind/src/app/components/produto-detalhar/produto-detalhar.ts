@@ -12,35 +12,30 @@ import { ProdutoService } from '../../services/produto';
   templateUrl: './produto-detalhar.html'
 })
 export class ProdutoDetalharComponent implements OnInit {
-  readonly produtoService = inject(ProdutoService);
   readonly produtoEncontrado = signal(true);
+
+  readonly produto = signal<Produto | null>(null);
 
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly produtoService = inject(ProdutoService);
 
   ngOnInit() {
-    const produtoDaRota = this.produtoRecebidoPelaRota();
-    const produtoId = Number(this.activatedRoute.snapshot.paramMap.get('id'));
+    const produtoId = Number(
+      this.activatedRoute.snapshot.paramMap.get('id')
+    );
 
-    if (produtoDaRota?.id === produtoId) {
-      this.produtoService.definirProdutoDetalhado(produtoDaRota);
-      this.produtoEncontrado.set(true);
+    const produto = this.produtoService.buscarPorId(produtoId);
+
+    if (!produto) {
+      this.produtoEncontrado.set(false);
       return;
     }
 
-    const produto = this.produtoService.detalhar(produtoId);
-    this.produtoEncontrado.set(Boolean(produto));
+    this.produto.set(produto);
   }
 
   fechar() {
-    this.produtoService.fecharDetalhes();
     this.router.navigate(['/produtos']);
-  }
-
-  private produtoRecebidoPelaRota(): Produto | null {
-    const state = this.router.getCurrentNavigation()?.extras.state ?? history.state;
-    const produto = state?.['produto'] as Produto | undefined;
-
-    return produto ?? null;
   }
 }
