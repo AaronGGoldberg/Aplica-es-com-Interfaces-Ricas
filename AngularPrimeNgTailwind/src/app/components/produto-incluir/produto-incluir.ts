@@ -1,10 +1,12 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { form, FormField, FormRoot, max, min, minLength, required } from '@angular/forms/signals';
 
 import { Produto } from '../../models/produto';
+import { ProdutoService } from '../../services/produto';
 
 @Component({
   selector: 'app-produto-incluir',
@@ -13,7 +15,8 @@ import { Produto } from '../../models/produto';
   templateUrl: './produto-incluir.html'
 })
 export class ProdutoIncluirComponent {
-  readonly produtoCriado = output<Produto>();
+  private readonly messageService = inject(MessageService);
+  private readonly produtoService = inject(ProdutoService);
 
   readonly model = signal<Produto>({
     id: 0,
@@ -35,7 +38,16 @@ export class ProdutoIncluirComponent {
       return;
     }
 
-    this.produtoCriado.emit({ ...this.model(), id: Date.now() });
+    const { nome, preco, ativo } = this.model();
+
+    this.produtoService.inserir({ nome, preco, ativo });
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Criado',
+      detail: 'Produto adicionado!'
+    });
+
     this.resetarFormulario();
   }
 
