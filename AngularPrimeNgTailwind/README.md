@@ -199,21 +199,7 @@ Esta tarefa segue a proposta de componentes Angular da aula 09, reaproveitando o
 7. Ao detalhar, o service define `produtoDetalhado` e o `App` mostra `app-produto-detalhar`.
 8. Ao remover, `app-produto-remover` chama `produtoService.remover()` e limpa edição/detalhe quando necessário.
 
-### Sugestão de commits semânticos por funcionalidade/arquivo
-
-Caso a tarefa seja registrada em commits menores, uma organização possível é:
-
-```bash
-feat(produto-incluir): cria componente de cadastro de produtos
-feat(produto-alterar): cria componente de edição de produtos
-feat(produto-listar): cria componente de listagem e ações do CRUD
-feat(produto-detalhar): cria componente de visualização de detalhes
-refactor(app): centraliza estado e composição dos componentes do CRUD
-docs(readme): detalha componentização e fluxo da atividade
-test(app): atualiza teste do título da aplicação
-chore(build): ajusta orçamento de bundle do Angular
-```
----
+--- 
 
 ## 9) Atividade: Serviços com dados em memória
 
