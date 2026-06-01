@@ -1,3 +1,4 @@
+@if (produtoEncontrado()) {
 <form
   [formRoot]="produtoForm"
   (submit)="$event.preventDefault()"
@@ -24,12 +25,14 @@
         pInputText
         type="number"
         [formField]="produtoForm.preco"
-        placeholder="1299.90"
+        placeholder="0.00"
         class="custom-input">
     </div>
 
-    <div class="flex items-end">
-      <div class="status-box">
+    <div>
+      <label class="label-style">Status</label>
+
+      <div class="flex items-center gap-3 mt-3">
         <p-checkbox
           [formField]="produtoForm.ativo"
           [binary]="true">
@@ -56,7 +59,7 @@
       severity="secondary"
       [outlined]="true"
       size="large"
-      (onClick)="produtoService.cancelarEdicao()">
+      (onClick)="cancelar()">
     </p-button>
 
     <p-button
@@ -70,3 +73,18 @@
     </p-button>
   </div>
 </form>
+
+} @else {
+  <div class="glass-card p-10 text-center">
+    <h2 class="text-2xl font-bold text-slate-800">Produto não encontrado</h2>
+    <p class="text-slate-500 mt-2">Volte para a listagem e selecione um produto cadastrado para alterar.</p>
+
+    <div class="mt-8">
+      <p-button
+        label="Voltar para a listagem"
+        icon="pi pi-arrow-left"
+        routerLink="/produtos">
+      </p-button>
+    </div>
+  </div>
+}

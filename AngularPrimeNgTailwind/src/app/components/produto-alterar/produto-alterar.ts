@@ -1,4 +1,5 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -11,13 +12,17 @@ import { ProdutoService } from '../../services/produto';
 @Component({
   selector: 'app-produto-alterar',
   standalone: true,
-  imports: [ButtonModule, CheckboxModule, InputTextModule, FormRoot, FormField],
+  imports: [ButtonModule, CheckboxModule, InputTextModule, RouterLink, FormRoot, FormField],
   templateUrl: './produto-alterar.html'
 })
-export class ProdutoAlterarComponent {
+export class ProdutoAlterarComponent implements OnInit {
   readonly produtoService = inject(ProdutoService);
-  private readonly messageService = inject(MessageService);
 
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly messageService = inject(MessageService);
+  private readonly router = inject(Router);
+
+  readonly produtoEncontrado = signal(true);
   readonly model = signal<Produto>({
     id: 0,
     nome: '',
@@ -43,6 +48,20 @@ export class ProdutoAlterarComponent {
     });
   }
 
+  ngOnInit() {
+    const produtoDaRota = this.produtoRecebidoPelaRota();
+    const produtoId = Number(this.activatedRoute.snapshot.paramMap.get('id'));
+
+    if (produtoDaRota?.id === produtoId) {
+      this.produtoService.produtoEditando.set(produtoDaRota ? { ...produtoDaRota } : null);
+      this.produtoEncontrado.set(true);
+      return;
+    }
+
+    const produto = this.produtoService.selecionarParaEdicao(produtoId);
+    this.produtoEncontrado.set(Boolean(produto));
+  }
+
   salvar() {
     if (this.produtoForm().invalid()) {
       return;
@@ -65,5 +84,19 @@ export class ProdutoAlterarComponent {
       summary: 'Atualizado',
       detail: 'Produto atualizado com sucesso!'
     });
+
+    this.router.navigate(['/produtos']);
+  }
+
+  cancelar() {
+    this.produtoService.cancelarEdicao();
+    this.router.navigate(['/produtos']);
+  }
+
+  private produtoRecebidoPelaRota(): Produto | null {
+    const state = this.router.getCurrentNavigation()?.extras.state ?? history.state;
+    const produto = state?.['produto'] as Produto | undefined;
+
+    return produto ?? null;
   }
 }
