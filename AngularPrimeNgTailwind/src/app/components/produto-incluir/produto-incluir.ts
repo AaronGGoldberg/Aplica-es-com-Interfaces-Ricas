@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { MessageService } from 'primeng/api';
+import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,12 +12,13 @@ import { ProdutoService } from '../../services/produto';
 @Component({
   selector: 'app-produto-incluir',
   standalone: true,
-  imports: [ButtonModule, CheckboxModule, InputTextModule, FormRoot, FormField],
+  imports: [ButtonModule, CheckboxModule, InputTextModule, RouterLink, FormRoot, FormField],
   templateUrl: './produto-incluir.html'
 })
 export class ProdutoIncluirComponent {
   private readonly messageService = inject(MessageService);
   private readonly produtoService = inject(ProdutoService);
+  private readonly router = inject(Router);
 
   readonly model = signal<Produto>({
     id: 0,
@@ -39,7 +41,6 @@ export class ProdutoIncluirComponent {
     }
 
     const { nome, preco, ativo } = this.model();
-
     this.produtoService.inserir({ nome, preco, ativo });
 
     this.messageService.add({
@@ -49,6 +50,7 @@ export class ProdutoIncluirComponent {
     });
 
     this.resetarFormulario();
+    this.router.navigate(['/produtos']);
   }
 
   resetarFormulario() {
