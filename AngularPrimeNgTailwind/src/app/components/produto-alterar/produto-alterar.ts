@@ -1,10 +1,12 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { form, FormField, FormRoot, max, min, minLength, required } from '@angular/forms/signals';
 
 import { Produto } from '../../models/produto';
+import { ProdutoService } from '../../services/produto';
 
 @Component({
   selector: 'app-produto-alterar',
@@ -13,9 +15,8 @@ import { Produto } from '../../models/produto';
   templateUrl: './produto-alterar.html'
 })
 export class ProdutoAlterarComponent {
-  readonly produto = input.required<Produto>();
-  readonly produtoAtualizado = output<Produto>();
-  readonly edicaoCancelada = output<void>();
+  readonly produtoService = inject(ProdutoService);
+  private readonly messageService = inject(MessageService);
 
   readonly model = signal<Produto>({
     id: 0,
@@ -34,7 +35,11 @@ export class ProdutoAlterarComponent {
 
   constructor() {
     effect(() => {
-      this.model.set({ ...this.produto() });
+      const produto = this.produtoService.produtoEditando();
+
+      if (produto) {
+        this.model.set({ ...produto });
+      }
     });
   }
 
@@ -43,6 +48,22 @@ export class ProdutoAlterarComponent {
       return;
     }
 
-    this.produtoAtualizado.emit({ ...this.model() });
+    const produtoAtualizado = this.produtoService.atualizar({ ...this.model() });
+
+    if (!produtoAtualizado) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Produto não encontrado para atualização.'
+      });
+
+      return;
+    }
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Atualizado',
+      detail: 'Produto atualizado com sucesso!'
+    });
   }
 }
