@@ -1,0 +1,72 @@
+<form
+  [formRoot]="produtoForm"
+  (submit)="$event.preventDefault()"
+  class="glass-card p-10 border-amber-200">
+
+  <div class="mb-10">
+    <h2 class="text-2xl font-bold text-slate-800">Editar Produto</h2>
+    <p class="text-slate-500 mt-2">Altere os dados do produto selecionado</p>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-8">
+    <div>
+      <label class="label-style">Nome</label>
+      <input
+        pInputText
+        [formField]="produtoForm.nome"
+        placeholder="Ex: Notebook Dell"
+        class="custom-input">
+    </div>
+
+    <div>
+      <label class="label-style">Preço</label>
+      <input
+        pInputText
+        type="number"
+        [formField]="produtoForm.preco"
+        placeholder="1299.90"
+        class="custom-input">
+    </div>
+
+    <div class="flex items-end">
+      <div class="status-box">
+        <p-checkbox
+          [formField]="produtoForm.ativo"
+          [binary]="true">
+        </p-checkbox>
+        <span>Produto ativo</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 space-y-1">
+    @if (produtoForm.nome().touched() && produtoForm.nome().invalid()) {
+      <small class="text-red-500 block">{{ produtoForm.nome().errors()[0].message }}</small>
+    }
+
+    @if (produtoForm.preco().touched() && produtoForm.preco().invalid()) {
+      <small class="text-red-500 block">{{ produtoForm.preco().errors()[0].message }}</small>
+    }
+  </div>
+
+  <div class="flex justify-end gap-3 mt-10">
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      severity="secondary"
+      [outlined]="true"
+      size="large"
+      (onClick)="edicaoCancelada.emit()">
+    </p-button>
+
+    <p-button
+      label="Atualizar produto"
+      icon="pi pi-check"
+      severity="warn"
+      size="large"
+      [raised]="true"
+      [disabled]="produtoForm().invalid()"
+      (onClick)="salvar()">
+    </p-button>
+  </div>
+</form>
