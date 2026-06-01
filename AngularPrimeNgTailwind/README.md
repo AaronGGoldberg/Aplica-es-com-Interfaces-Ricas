@@ -262,6 +262,46 @@ O service concentra:
 
 ---
 
+## 10) Atividade: Rotas
+
+Nesta evolução, a aplicação passou a usar o **Angular Router** para acessar as operações do modelo `Produto` por URLs distintas.
+
+### Rotas criadas
+
+| Rota | Componente | Finalidade |
+| --- | --- | --- |
+| `/produtos` | `ProdutoListarComponent` | Lista todos os produtos cadastrados. |
+| `/produtos/novo` | `ProdutoIncluirComponent` | Abre o formulário de inclusão de produto. |
+| `/produtos/:id/detalhar` | `ProdutoDetalharComponent` | Exibe os detalhes do produto selecionado na listagem. |
+| `/produtos/:id/editar` | `ProdutoAlterarComponent` | Abre o formulário de atualização do produto selecionado na listagem. |
+| `/` | redirecionamento | Redireciona automaticamente para `/produtos`. |
+| `**` | redirecionamento | Redireciona rotas inválidas para `/produtos`. |
+
+### Comunicação entre listagem, detalhe e atualização
+
+A listagem ativa as rotas de detalhe e atualização enviando o produto selecionado no estado da navegação:
+
+- ao clicar em **editar**, `ProdutoListarComponent` chama `router.navigate(['/produtos', produto.id, 'editar'], { state: { produto } })`;
+- ao clicar em **detalhar**, `ProdutoListarComponent` chama `router.navigate(['/produtos', produto.id, 'detalhar'], { state: { produto } })`.
+
+Os componentes `ProdutoAlterarComponent` e `ProdutoDetalharComponent` leem essa informação da nova rota ativada usando o estado da navegação (`router.getCurrentNavigation()?.extras.state`) e também usam o parâmetro `:id` da rota como fallback para buscar o produto no `ProdutoService`.
+
+### Arquivos alterados nesta atividade
+
+| Arquivo | Alteração |
+| --- | --- |
+| `src/app/app.routes.ts` | Definição das rotas de listagem, inclusão, detalhe e atualização. |
+| `src/app/app.ts` | Importação de `RouterOutlet`, `RouterLink` e `RouterLinkActive` para composição com rotas. |
+| `src/app/app.html` | Inclusão do menu de navegação e do `<router-outlet>`. |
+| `src/app/components/produto-listar/*` | Botões de detalhe e edição passaram a ativar rotas com o produto no estado da navegação. |
+| `src/app/components/produto-detalhar/*` | Leitura do produto recebido pela rota e exibição dos detalhes em rota própria. |
+| `src/app/components/produto-alterar/*` | Leitura do produto recebido pela rota e edição em rota própria. |
+| `src/app/components/produto-incluir/*` | Inclusão em rota própria e retorno para a listagem após salvar. |
+| `src/app/services/produto.ts` | Métodos auxiliares para definir produto em edição e produto detalhado a partir da rota. |
+| `src/app/app.spec.ts` | Configuração do provider de rotas no teste do componente principal. |
+
+---
+
 ## 👨‍💻 Autor
 
 Projeto acadêmico organizado por **Aaron Goldberg**.
