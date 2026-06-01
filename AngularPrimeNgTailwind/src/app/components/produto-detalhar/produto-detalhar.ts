@@ -1,7 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
-import { Produto } from '../../models/produto';
+import { ProdutoService } from '../../services/produto';
 
 @Component({
   selector: 'app-produto-detalhar',
@@ -10,6 +10,5 @@ import { Produto } from '../../models/produto';
   templateUrl: './produto-detalhar.html'
 })
 export class ProdutoDetalharComponent {
-  readonly produto = input.required<Produto>();
-  readonly fechar = output<void>();
+  readonly produtoService = inject(ProdutoService);
 }
