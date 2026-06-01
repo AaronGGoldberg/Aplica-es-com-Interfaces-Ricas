@@ -57,16 +57,24 @@ export class ProdutoService {
 
   detalhar(id: number): Produto | null {
     const produto = this.produtos().find(produtoAtual => produtoAtual.id === id) ?? null;
-    this.produtoDetalhado.set(produto ? { ...produto } : null);
+    this.definirProdutoDetalhado(produto);
 
     return produto;
   }
 
+  definirProdutoDetalhado(produto: Produto | null) {
+    this.produtoDetalhado.set(produto ? { ...produto } : null);
+  }
+
   selecionarParaEdicao(id: number): Produto | null {
     const produto = this.produtos().find(produtoAtual => produtoAtual.id === id) ?? null;
-    this.produtoEditando.set(produto ? { ...produto } : null);
+    this.definirProdutoEditando(produto);
 
     return produto;
+  }
+
+  definirProdutoEditando(produto: Produto | null) {
+    this.produtoEditando.set(produto ? { ...produto } : null);
   }
 
   cancelarEdicao() {
