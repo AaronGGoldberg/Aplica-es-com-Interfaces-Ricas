@@ -41,16 +41,24 @@ export class ProdutoIncluirComponent {
     }
 
     const { nome, preco, ativo } = this.model();
-    this.produtoService.inserir({ nome, preco, ativo });
+    this.produtoService.inserir({ nome, preco, ativo }).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Criado',
+          detail: 'Produto adicionado!'
+        });
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Criado',
-      detail: 'Produto adicionado!'
+        this.resetarFormulario();
+        this.router.navigate(['/produtos']);
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Não foi possível adicionar o produto.'
+        })
     });
-
-    this.resetarFormulario();
-    this.router.navigate(['/produtos']);
   }
 
   resetarFormulario() {

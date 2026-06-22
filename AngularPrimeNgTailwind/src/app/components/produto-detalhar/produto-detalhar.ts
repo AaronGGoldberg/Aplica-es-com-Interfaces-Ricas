@@ -25,14 +25,10 @@ export class ProdutoDetalharComponent implements OnInit {
       this.activatedRoute.snapshot.paramMap.get('id')
     );
 
-    const produto = this.produtoService.buscarPorId(produtoId);
-
-    if (!produto) {
-      this.produtoEncontrado.set(false);
-      return;
-    }
-
-    this.produto.set(produto);
+    this.produtoService.buscarPorId(produtoId).subscribe({
+      next: produto => this.produto.set(produto),
+      error: () => this.produtoEncontrado.set(false)
+    });
   }
 
   fechar() {

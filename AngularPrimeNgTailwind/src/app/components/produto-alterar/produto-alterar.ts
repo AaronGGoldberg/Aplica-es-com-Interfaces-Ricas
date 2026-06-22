@@ -73,14 +73,10 @@ export class ProdutoAlterarComponent implements OnInit {
       this.activatedRoute.snapshot.paramMap.get('id')
     );
 
-    const produto = this.produtoService.buscarPorId(produtoId);
-
-    if (!produto) {
-      this.produtoEncontrado.set(false);
-      return;
-    }
-
-    this.model.set({ ...produto });
+    this.produtoService.buscarPorId(produtoId).subscribe({
+      next: produto => this.model.set({ ...produto }),
+      error: () => this.produtoEncontrado.set(false)
+    });
   }
 
   salvar() {
@@ -88,28 +84,23 @@ export class ProdutoAlterarComponent implements OnInit {
       return;
     }
 
-    const produtoAtualizado =
-      this.produtoService.atualizar({
-        ...this.model()
-      });
+    this.produtoService.atualizar({ ...this.model() }).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Atualizado',
+          detail: 'Produto atualizado com sucesso!'
+        });
 
-    if (!produtoAtualizado) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Produto não encontrado para atualização.'
-      });
-
-      return;
-    }
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Atualizado',
-      detail: 'Produto atualizado com sucesso!'
+        this.router.navigate(['/produtos']);
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Produto não encontrado para atualização.'
+        })
     });
-
-    this.router.navigate(['/produtos']);
   }
 
   cancelar() {

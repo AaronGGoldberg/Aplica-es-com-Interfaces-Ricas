@@ -18,22 +18,19 @@ export class ProdutoRemoverComponent {
   private readonly produtoService = inject(ProdutoService);
 
   remover() {
-    const produtoRemovido = this.produtoService.remover(this.produto().id);
-
-    if (!produtoRemovido) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Produto não encontrado para remoção.'
-      });
-
-      return;
-    }
-
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Removido',
-      detail: 'Produto excluído'
+    this.produtoService.remover(this.produto().id).subscribe({
+      next: () =>
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Removido',
+          detail: 'Produto excluído'
+        }),
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Produto não encontrado para remoção.'
+        })
     });
   }
 }
