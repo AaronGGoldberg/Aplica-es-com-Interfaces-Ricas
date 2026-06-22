@@ -1,4 +1,6 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 
 import { Produto } from '../models/produto';
 
@@ -8,6 +10,8 @@ export type ProdutoSemId = Omit<Produto, 'id'>;
   providedIn: 'root'
 })
 export class ProdutoService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = '/api/produtos';
   private readonly produtosState = signal<Produto[]>([]);
 
   readonly produtos = this.produtosState.asReadonly();
@@ -24,54 +28,45 @@ export class ProdutoService {
       .toFixed(2)
   );
 
-  listar(): Produto[] {
-    return this.produtos();
+  listar(): Observable<Produto[]> {
+    return this.http.get<Produto[]>(this.apiUrl).pipe(
+      tap(produtos => this.produtosState.set(produtos))
+    );
   }
 
-  buscarPorId(id: number): Produto | null {
-    return this.produtos().find(produto => produto.id === id) ?? null;
+  buscarPorId(id: number): Observable<Produto> {
+    return this.http.get<Produto>(`${this.apiUrl}/${id}`);
   }
 
-  inserir(produto: ProdutoSemId): Produto {
-    const novoProduto: Produto = {
-      ...produto,
-      id: Date.now()
-    };
-
-    this.produtosState.update(produtos => [...produtos, novoProduto]);
-
-    return novoProduto;
-  }
-
-  atualizar(produtoAtualizado: Produto): Produto | null {
-    const produtoExiste = this.buscarPorId(produtoAtualizado.id);
-
-    if (!produtoExiste) {
-      return null;
-    }
-
-    this.produtosState.update(produtos =>
-      produtos.map(produto =>
-        produto.id === produtoAtualizado.id
-          ? produtoAtualizado
-          : produto
+  inserir(produto: ProdutoSemId): Observable<Produto> {
+    return this.http.post<Produto>(this.apiUrl, produto).pipe(
+      tap(novoProduto =>
+        this.produtosState.update(produtos => [...produtos, novoProduto])
       )
     );
-
-    return produtoAtualizado;
   }
 
-  remover(id: number): boolean {
-    const produtoExiste = this.buscarPorId(id);
+  atualizar(produtoAtualizado: Produto): Observable<Produto> {
+    return this.http
+      .put<Produto>(`${this.apiUrl}/${produtoAtualizado.id}`, produtoAtualizado)
+      .pipe(
+        tap(produtoSalvo =>
+          this.produtosState.update(produtos =>
+            produtos.map(produto =>
+              produto.id === produtoSalvo.id ? produtoSalvo : produto
+            )
+          )
+        )
+      );
+  }
 
-    if (!produtoExiste) {
-      return false;
-    }
-
-    this.produtosState.update(produtos =>
-      produtos.filter(produto => produto.id !== id)
+  remover(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() =>
+        this.produtosState.update(produtos =>
+          produtos.filter(produto => produto.id !== id)
+        )
+      )
     );
-
-    return true;
   }
 }
