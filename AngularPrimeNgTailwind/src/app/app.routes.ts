@@ -4,6 +4,8 @@ import { ProdutoAlterarComponent } from './components/produto-alterar/produto-al
 import { ProdutoDetalharComponent } from './components/produto-detalhar/produto-detalhar';
 import { ProdutoIncluirComponent } from './components/produto-incluir/produto-incluir';
 import { ProdutoListarComponent } from './components/produto-listar/produto-listar';
+import { authGuard } from './auth/auth.guard';
+import { LoginComponent } from './auth/login/login';
 
 export const routes: Routes = [
   {
@@ -12,20 +14,28 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'login',
+    component: LoginComponent
+  },
+  {
     path: 'produtos',
-    component: ProdutoListarComponent
+    component: ProdutoListarComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'produtos/novo',
-    component: ProdutoIncluirComponent
+    component: ProdutoIncluirComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'produtos/:id/detalhar',
-    component: ProdutoDetalharComponent
+    component: ProdutoDetalharComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'produtos/:id/editar',
-    component: ProdutoAlterarComponent
+    component: ProdutoAlterarComponent,
+    canActivate: [authGuard]
   },
   {
     path: '**',
