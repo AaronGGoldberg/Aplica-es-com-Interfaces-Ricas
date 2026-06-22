@@ -347,6 +347,49 @@ No Codespaces, abra a porta encaminhada do Angular, normalmente `4200`. Não é 
 
 ---
 
+## 12) Atividade: Autenticação JWT e Guardas de Rotas
+
+Nesta evolução, a aplicação passou a exigir login antes do acesso ao CRUD de produtos.
+
+### Credenciais de teste
+
+| Usuário | Senha |
+| --- | --- |
+| `admin` | `admin123` |
+
+### Como a autenticação funciona
+
+* A tela `/login` envia usuário e senha para `/api/auth/login`.
+* O proxy do Angular encaminha `/api/auth/login` para o backend em `/auth/login`.
+* O backend valida as credenciais e retorna um token JWT assinado.
+* O `AuthService` salva o token e os dados do usuário no `localStorage`.
+* O `authGuard` protege as rotas de produtos e redireciona usuários não autenticados para `/login`.
+* O `authInterceptor` envia automaticamente o cabeçalho `Authorization: Bearer <token>` nas chamadas HTTP para `/api`.
+* O backend rejeita operações de produtos sem token JWT válido com status `401`.
+
+### Rotas protegidas
+
+| Rota | Proteção |
+| --- | --- |
+| `/produtos` | exige login |
+| `/produtos/novo` | exige login |
+| `/produtos/:id/detalhar` | exige login |
+| `/produtos/:id/editar` | exige login |
+
+### Arquivos principais desta atividade
+
+| Arquivo | Responsabilidade |
+| --- | --- |
+| `backend.js` | Endpoint `/auth/login`, emissão/validação de JWT e proteção das rotas `/produtos`. |
+| `src/app/auth/auth.service.ts` | Login, logout, persistência do token e estado de autenticação. |
+| `src/app/auth/auth.guard.ts` | Guarda `CanActivate` para proteger as rotas internas. |
+| `src/app/auth/auth.interceptor.ts` | Interceptor que envia o token JWT nas requisições HTTP. |
+| `src/app/auth/login/*` | Tela de login com usuário e senha. |
+| `src/app/app.routes.ts` | Rota pública de login e rotas de produtos protegidas pelo guard. |
+| `src/app/app.config.ts` | Registro do interceptor com `provideHttpClient(withInterceptors(...))`. |
+
+---
+
 ## 👨‍💻 Autor
 
 Projeto acadêmico organizado por **Aaron Goldberg**.
