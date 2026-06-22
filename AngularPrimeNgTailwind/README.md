@@ -24,6 +24,8 @@ Este repositório foi desenvolvido para:
 * **TypeScript**
 * **Node + npm**
 * **Signal Forms** (`@angular/forms/signals`)
+* **HttpClient**
+* **Backend REST/JSON local em Node.js**
 
 ---
 
@@ -73,8 +75,8 @@ A tela principal foi refatorada em componentes dedicados para cada operação do
 Após a atividade de services, a comunicação dos dados do CRUD passou a ser centralizada no `ProdutoService`:
 
 - `input.required<T>()` continua sendo usado quando um componente filho precisa receber um item específico, como no componente de remoção;
-- o `ProdutoService` concentra a lista em memória e as operações de inserir, atualizar, detalhar, listar e remover;
-- signals e computed signals no service armazenam produtos, edição, seleção e indicadores do dashboard.
+- o `ProdutoService` concentra as operações de inserir, atualizar, detalhar, listar e remover usando o backend REST/JSON;
+- signals e computed signals no service mantêm a listagem carregada do backend e os indicadores do dashboard atualizados.
 
 ---
 
@@ -103,7 +105,7 @@ src/
         produto-remover.ts                      -> componente de remoção usando ProdutoService
         produto-remover.html                    -> botão PrimeNG de remoção do produto        
     models/produto.ts                           -> interface de dados
-    services/produto.ts                         -> service com dados em memória e operações do CRUD    
+    services/produto.ts                         -> service com HttpClient e operações REST/JSON do CRUD   
   main.ts                                       -> bootstrap da aplicação
   styles.css                                    -> estilos globais
 angular.json                                    -> build, budgets e configurações do Angular
@@ -128,8 +130,16 @@ npm install
 ### Executar em desenvolvimento
 
 ```bash
+npm run backend
+```
+
+Em outro terminal, execute o frontend Angular com proxy para o backend:
+
+```bash
 npm start
 ```
+
+O script `npm start` usa `proxy.conf.json` para redirecionar as chamadas de `/api` para `http://localhost:3000`. Por isso, a mesma configuração funciona no **localhost** e no **GitHub Codespaces**: o navegador acessa a API pela mesma origem do frontend, e o servidor de desenvolvimento do Angular encaminha a requisição internamente para o backend.
 
 ### Gerar build de produção
 
@@ -201,9 +211,9 @@ Esta tarefa segue a proposta de componentes Angular da aula 09, reaproveitando o
 
 --- 
 
-## 9) Atividade: Serviços com dados em memória
+## 9) Atividade: Serviços
 
-Nesta evolução, o CRUD deixou de manter os dados diretamente no componente principal e passou a usar um **service Angular** para centralizar as informações do modelo `Produto` em memória.
+Nesta evolução, o CRUD deixou de manter os dados diretamente no componente principal e passou a usar um **service Angular** para centralizar as operações do modelo `Produto`. Na atividade seguinte, esse service foi adaptado para buscar e salvar dados no backend REST/JSON.
 
 ### Service criado
 
@@ -211,9 +221,7 @@ O arquivo `src/app/services/produto.ts` define o `ProdutoService`, registrado co
 
 O service concentra:
 
-- a lista de produtos em memória;
-- o produto selecionado para edição;
-- o produto selecionado para detalhamento;
+- o estado local da listagem carregada do backend;
 - indicadores calculados do dashboard, como total de produtos, total de ativos e valor total;
 - as operações de **inserir**, **atualizar**, **detalhar**, **listar** e **remover**.
 
@@ -221,27 +229,27 @@ O service concentra:
 
 | Operação | Método | Responsabilidade |
 | --- | --- | --- |
-| Inserir | `inserir(produto)` | Cria um novo produto com `id` gerado em memória e adiciona na lista. |
-| Atualizar | `atualizar(produtoAtualizado)` | Substitui os dados do produto existente e sincroniza o item detalhado quando necessário. |
-| Detalhar | `detalhar(id)` | Busca o produto pelo `id` e define o item exibido no componente de detalhes. |
-| Listar | `listar()` | Retorna a lista atual de produtos armazenada no service. |
-| Remover | `remover(id)` | Remove o produto da lista e limpa a edição/detalhe caso o produto removido estivesse selecionado. |
+| Inserir | `inserir(produto)` | Envia `POST` para criar um produto no backend. |
+| Atualizar | `atualizar(produtoAtualizado)` | Envia `PUT` para substituir os dados do produto existente. |
+| Detalhar | `buscarPorId(id)` | Envia `GET` para buscar um produto específico pelo `id`. |
+| Listar | `listar()` | Envia `GET` para carregar a lista de produtos do backend. |
+| Remover | `remover(id)` | Envia `DELETE` para remover o produto no backend. |
 
 ### Componentes usando o service
 
 | Componente | Uso do service |
 | --- | --- |
 | `ProdutoIncluirComponent` | Chama `produtoService.inserir()` ao salvar um novo produto. |
-| `ProdutoAlterarComponent` | Lê `produtoService.produtoEditando()` e chama `produtoService.atualizar()` ao confirmar a edição. |
-| `ProdutoListarComponent` | Chama `produtoService.listar()`, `produtoService.selecionarParaEdicao()` e `produtoService.detalhar()`. |
-| `ProdutoDetalharComponent` | Lê `produtoService.produtoDetalhado()` e chama `produtoService.fecharDetalhes()`. |
+| `ProdutoAlterarComponent` | Chama `produtoService.buscarPorId()` para preencher o formulário e `produtoService.atualizar()` ao confirmar a edição. |
+| `ProdutoListarComponent` | Chama `produtoService.listar()` e navega para as rotas de edição ou detalhe. |
+| `ProdutoDetalharComponent` | Chama `produtoService.buscarPorId()` para carregar os dados completos do produto. |
 | `ProdutoRemoverComponent` | Chama `produtoService.remover()` para excluir o produto recebido por `input.required<Produto>()`. |
 | `App` | Usa o service apenas para compor a tela e exibir os indicadores calculados. |
 
 ### Fluxo após a refatoração para service
 
 1. Os componentes não guardam mais a lista de produtos localmente.
-2. O `ProdutoService` passa a ser a fonte única dos dados em memória.
+2. O `ProdutoService` passa a ser o ponto único de comunicação entre os componentes e o backend..
 3. A inclusão, alteração, listagem, detalhamento e remoção acessam o mesmo service por injeção de dependência.
 4. O componente principal fica mais simples, pois não precisa mais implementar diretamente as regras de CRUD.
 5. Os toasts continuam sendo exibidos pelos componentes que executam ações de inclusão, alteração e remoção.
@@ -285,6 +293,57 @@ Os componentes `ProdutoAlterarComponent` e `ProdutoDetalharComponent` leem essa 
 | `src/app/components/produto-incluir/*` | Inclusão em rota própria e retorno para a listagem após salvar. |
 | `src/app/services/produto.ts` | Métodos auxiliares para definir produto em edição e produto detalhado a partir da rota. |
 | `src/app/app.spec.ts` | Configuração do provider de rotas no teste do componente principal. |
+
+---
+
+## 11) Atividade: Comunicação com Backend REST/JSON
+
+Nesta evolução, o CRUD de produtos deixou de usar armazenamento apenas em memória e passou a se comunicar com um backend REST/JSON local.
+
+### Como a integração funciona
+
+* O backend Node.js expõe a rota `/produtos` na porta `3000`.
+* O frontend Angular chama a API por `/api/produtos`, usando `HttpClient`.
+* O arquivo `proxy.conf.json` do Angular redireciona `/api` para `http://localhost:3000` durante o `npm start`.
+* Essa abordagem evita URL fixa no service e funciona tanto localmente quanto no GitHub Codespaces, pois o navegador não precisa chamar diretamente `localhost:3000`.
+
+### Executar no localhost ou Codespaces
+
+Abra dois terminais dentro da pasta `AngularPrimeNgTailwind`:
+
+Terminal 1 — backend REST/JSON:
+
+```bash
+npm run backend
+```
+
+Terminal 2 — frontend Angular com proxy:
+
+```bash
+npm start
+```
+
+No Codespaces, abra a porta encaminhada do Angular, normalmente `4200`. Não é necessário trocar manualmente a URL da API no código.
+
+### Operações atendidas pelo backend
+
+| Operação | Método HTTP | Endpoint usado pelo Angular | Endpoint real no backend |
+| --- | --- | --- | --- |
+| Listar | `GET` | `/api/produtos` | `/produtos` |
+| Detalhar | `GET` | `/api/produtos/:id` | `/produtos/:id` |
+| Inserir | `POST` | `/api/produtos` | `/produtos` |
+| Atualizar | `PUT` | `/api/produtos/:id` | `/produtos/:id` |
+| Remover | `DELETE` | `/api/produtos/:id` | `/produtos/:id` |
+
+### Arquivos principais desta atividade
+
+| Arquivo | Responsabilidade |
+| --- | --- |
+| `backend.js` | Backend REST/JSON local sem dependências externas. |
+| `db.json` | Base JSON inicial dos produtos. |
+| `proxy.conf.json` | Proxy do Angular para funcionar em localhost e Codespaces. |
+| `src/app/services/produto.ts` | Service Angular com `HttpClient` para todas as operações de CRUD. |
+| `src/app/app.config.ts` | Registro de `provideHttpClient()`. |
 
 ---
 
