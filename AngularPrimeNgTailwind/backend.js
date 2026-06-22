@@ -1,9 +1,14 @@
+const crypto = require('node:crypto');
 const http = require('node:http');
 const { readFile, writeFile } = require('node:fs/promises');
 const { join } = require('node:path');
 
 const dbPath = join(__dirname, 'db.json');
 const port = Number(process.env.PORT ?? 3000);
+const jwtSecret = process.env.JWT_SECRET ?? 'produto-secret-academico';
+const users = [
+  { username: 'admin', password: 'admin123', name: 'Administrador' }
+];
 
 async function readDb() {
   return JSON.parse(await readFile(dbPath, 'utf8'));
@@ -29,6 +34,80 @@ function normalizarIdsProdutos(db) {
   });
 
   return idsAlterados;
+}
+
+function base64Url(input) {
+  return Buffer.from(input)
+    .toString('base64')
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
+
+function assinarJwt(data) {
+  return crypto
+    .createHmac('sha256', jwtSecret)
+    .update(data)
+    .digest('base64')
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
+
+function criarTokenJwt(user) {
+  const header = base64Url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = base64Url(
+    JSON.stringify({
+      sub: user.username,
+      name: user.name,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2
+    })
+  );
+  const data = `${header}.${payload}`;
+
+  return `${data}.${assinarJwt(data)}`;
+}
+
+function decodificarBase64Url(value) {
+  return Buffer.from(value.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString();
+}
+
+function verificarTokenJwt(token) {
+  if (!token) {
+    return null;
+  }
+
+  const [header, payload, signature] = token.split('.');
+
+  if (!header || !payload || !signature) {
+    return null;
+  }
+
+  const data = `${header}.${payload}`;
+  const expectedSignature = assinarJwt(data);
+
+  if (signature !== expectedSignature) {
+    return null;
+  }
+
+  const decodedPayload = JSON.parse(decodificarBase64Url(payload));
+
+  if (decodedPayload.exp < Math.floor(Date.now() / 1000)) {
+    return null;
+  }
+
+  return decodedPayload;
+}
+
+function getAuthenticatedUser(request) {
+  const authorization = request.headers.authorization ?? '';
+  const [type, token] = authorization.split(' ');
+
+  if (type !== 'Bearer') {
+    return null;
+  }
+
+  return verificarTokenJwt(token);
 }
 
 function sendJson(response, statusCode, body) {
@@ -60,8 +139,11 @@ function getBody(request) {
   });
 }
 
-function parseProdutoUrl(url) {
-  const { pathname } = new URL(url, `http://localhost:${port}`);
+function parseUrl(url) {
+  return new URL(url, `http://localhost:${port}`).pathname;
+}
+
+function parseProdutoUrl(pathname) {
   const match = pathname.match(/^\/produtos\/?(\d+)?$/);
   return match ? { id: match[1] ? Number(match[1]) : null } : null;
 }
@@ -72,14 +154,43 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
-  const produtoUrl = parseProdutoUrl(request.url);
-
-  if (!produtoUrl) {
-    sendJson(response, 404, { message: 'Rota não encontrada.' });
-    return;
-  }
+  const pathname = parseUrl(request.url);
 
   try {
+    if (request.method === 'POST' && pathname === '/auth/login') {
+      const credentials = await getBody(request);
+      const user = users.find(
+        item =>
+          item.username === credentials.username &&
+          item.password === credentials.password
+      );
+
+      if (!user) {
+        sendJson(response, 401, { message: 'Usuário ou senha inválidos.' });
+        return;
+      }
+
+      sendJson(response, 200, {
+        token: criarTokenJwt(user),
+        user: {
+          username: user.username,
+          name: user.name
+        }
+      });
+      return;
+    }
+
+    const produtoUrl = parseProdutoUrl(pathname);
+
+    if (!produtoUrl) {
+      sendJson(response, 404, { message: 'Rota não encontrada.' });
+      return;
+    }
+
+    if (!getAuthenticatedUser(request)) {
+      sendJson(response, 401, { message: 'Token JWT ausente ou inválido.' });
+      return;
+    }    
     const db = await readDb();
 
     if (normalizarIdsProdutos(db)) {

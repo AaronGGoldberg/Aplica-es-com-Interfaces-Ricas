@@ -2,12 +2,12 @@
   "produtos": [
     {
       "id": 1,
-      "nome": "Tecladinho",
+      "nome": "Teclado Gamer",
       "preco": 329.9,
-      "ativo": false
+      "ativo": true
     },
     {
-      "nome": "Fogão",
+      "nome": "Fogão de Cozinha",
       "preco": 3000,
       "ativo": true,
       "id": 2
