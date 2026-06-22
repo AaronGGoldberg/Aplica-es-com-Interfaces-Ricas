@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
+import { AuthService } from './auth/auth.service';
 import { ProdutoService } from './services/produto';
 
 @Component({
@@ -13,5 +14,13 @@ import { ProdutoService } from './services/produto';
   templateUrl: './app.html'
 })
 export class App {
+  readonly authService = inject(AuthService);  
   readonly produtoService = inject(ProdutoService);
+
+  private readonly router = inject(Router);
+
+  sair() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }  
 }
