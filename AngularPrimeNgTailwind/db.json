@@ -1,0 +1,16 @@
+{
+  "produtos": [
+    {
+      "id": 1,
+      "nome": "Tecladinho",
+      "preco": 329.9,
+      "ativo": false
+    },
+    {
+      "nome": "Fogão",
+      "preco": 3000,
+      "ativo": true,
+      "id": 2
+    }
+  ]
+}
